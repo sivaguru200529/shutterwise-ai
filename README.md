@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # ShutterWise AI
 
 > **Understand Light. Master Your Camera. Capture Better.**
@@ -100,3 +101,7 @@ npm run build
   - `/calculator` — Exposure Calculator Interface (Input controls, optical formula guide, disabled preview)
   - `/recommendations` — Camera Settings Guide (6 scenario baselines with educational caveats)
 - **Next Phase:** Phase 2 — Gemini AI Chatbot Integration.
+=======
+# shutterwise-ai
+An AI-powered photography learning assistant that helps beginners master ISO, aperture, shutter speed, exposure, and lighting through interactive lessons, AI guidance, and practical camera-setting recommendations.
+>>>>>>> origin/main
