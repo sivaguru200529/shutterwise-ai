@@ -21,6 +21,12 @@ export interface ChatResponseBody {
 
 export interface ChatErrorResponse {
   error: string;
-  code?: "CONFIG_MISSING" | "INVALID_REQUEST" | "RATE_LIMITED" | "SERVICE_UNAVAILABLE" | "SERVER_ERROR";
+  code?:
+    | "CONFIG_MISSING"
+    | "INVALID_REQUEST"
+    | "RATE_LIMITED"
+    | "SERVICE_UNAVAILABLE"
+    | "SERVER_ERROR"
+    | "GATEWAY_TIMEOUT";
 }
 

@@ -1,7 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import { isGeminiConfigured, sendPhotographyMessage, ChatHistoryItem } from "@/lib/gemini";
+import { isGeminiConfigured, sendPhotographyMessage, isTimeoutError, ChatHistoryItem } from "@/lib/gemini";
 import { checkRateLimit } from "@/lib/rate-limiter";
 import { ChatRequestBody, ChatResponseBody, ChatErrorResponse } from "@/types/chat";
+
+// Vercel Serverless Function Configuration for Hobby plan
+export const runtime = "nodejs";
+export const maxDuration = 60; // Max allowed duration on Vercel Hobby plan (seconds)
 
 // Maximum allowable request body size in bytes (10 KB)
 const MAX_REQUEST_SIZE_BYTES = 10 * 1024;
@@ -11,6 +15,8 @@ const MAX_INPUT_CHARS = 500;
 const MAX_HISTORY_MESSAGES = 6;
 
 export async function POST(req: NextRequest) {
+  const startTime = Date.now();
+
   try {
     // 1. IP rate limiting (best-effort sliding window)
     const clientIp =
@@ -121,26 +127,35 @@ export async function POST(req: NextRequest) {
     // 7. Dispatch to Gemini via server-side SDK
     const reply = await sendPhotographyMessage(trimmedMessage, sanitizedHistory);
 
+    const durationMs = Date.now() - startTime;
+    console.log(`[ShutterWise /api/chat] Success: generated response in ${durationMs}ms`);
+
     const responsePayload: ChatResponseBody = { reply };
     return NextResponse.json(responsePayload, { status: 200 });
   } catch (error: unknown) {
-    // Private server-side error logging (no secrets leaked)
+    const durationMs = Date.now() - startTime;
     const errorMessage = error instanceof Error ? error.message : String(error);
-    console.error("[ShutterWise /api/chat error]:", errorMessage);
+
+    // Safe diagnostic logging: records timing and sanitized error category (never secrets or full payload)
+    console.error(`[ShutterWise /api/chat error] (${durationMs}ms):`, errorMessage);
+
+    if (isTimeoutError(errorMessage)) {
+      const errorPayload: ChatErrorResponse = {
+        error: "The AI photography mentor timed out while generating a response. Please try again.",
+        code: "GATEWAY_TIMEOUT",
+      };
+      return NextResponse.json(errorPayload, { status: 504 });
+    }
 
     if (errorMessage.includes("429") || errorMessage.includes("RESOURCE_EXHAUSTED")) {
       const errorPayload: ChatErrorResponse = {
-        error: "Google Gemini rate limit exceeded. Please wait a moment before trying again.",
+        error: "Google Gemini rate limit reached. Please wait a moment before trying again.",
         code: "RATE_LIMITED",
       };
       return NextResponse.json(errorPayload, { status: 429 });
     }
 
-    if (
-      errorMessage.includes("503") ||
-      errorMessage.includes("UNAVAILABLE") ||
-      errorMessage.includes("GATEWAY_TIMEOUT")
-    ) {
+    if (errorMessage.includes("503") || errorMessage.includes("UNAVAILABLE")) {
       const errorPayload: ChatErrorResponse = {
         error: "The AI photography mentor is currently unreachable. Please try again shortly.",
         code: "SERVICE_UNAVAILABLE",

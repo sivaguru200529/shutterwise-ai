@@ -51,12 +51,21 @@ export default function ChatPage() {
   }, [messages, isClientLoaded, scrollToBottom]);
 
   // Send message implementation
-  const handleSendMessage = async (textToSend: string) => {
+  const handleSendMessage = async (textToSend: string, isRetry = false) => {
     const trimmed = textToSend.trim();
     if (!trimmed || isLoading) return;
 
     setErrorNotice(null);
     setLastFailedMessage(null);
+
+    // Prevent duplicate user message bubble if retrying the same message
+    const baseMessages =
+      isRetry &&
+      messages.length > 0 &&
+      messages[messages.length - 1].role === "user" &&
+      messages[messages.length - 1].content === trimmed
+        ? messages.slice(0, -1)
+        : messages;
 
     const userMsg: ChatMessage = {
       id: `user-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
@@ -66,14 +75,14 @@ export default function ChatPage() {
     };
 
     // Optimistically update conversation
-    const updatedMessages = [...messages, userMsg];
+    const updatedMessages = [...baseMessages, userMsg];
     setMessages(updatedMessages);
     setInputText("");
     setIsLoading(true);
 
     try {
-      // Build history payload: last 6 messages excluding current
-      const historyPayload = messages.slice(-6).map((m) => ({
+      // Build history payload: last 6 messages prior to current query
+      const historyPayload = baseMessages.slice(-6).map((m) => ({
         role: m.role,
         content: m.content,
       }));
@@ -151,7 +160,7 @@ export default function ChatPage() {
 
   const handleRetry = () => {
     if (lastFailedMessage) {
-      handleSendMessage(lastFailedMessage);
+      handleSendMessage(lastFailedMessage, true);
     }
   };
 
