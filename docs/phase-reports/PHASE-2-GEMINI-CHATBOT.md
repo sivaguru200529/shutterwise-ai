@@ -285,7 +285,7 @@ To enable live Gemini AI responses in your local development environment:
 ## 12. Git Commit Hash
 
 - **Branch:** `main`
-- **Commit Hash:** `302397c`
+- **Commit Hash:** `d6abc88`
 - **Commit Message:** `feat(phase-2): integrate Gemini photography chatbot`
 
 ---
