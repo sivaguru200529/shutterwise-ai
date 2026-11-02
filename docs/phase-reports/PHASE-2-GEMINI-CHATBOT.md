@@ -233,7 +233,7 @@ To deploy ShutterWise AI to Vercel's free Hobby plan:
   - `fa62b80`: `docs(phase-2): record final commit hash d6abc88`
   - `d6abc88`: `feat(phase-2): integrate Gemini photography chatbot`
 - **Current Fix Commit:**
-  - `fix(phase-2): resolve Gemini API timeout and add Vercel configuration`
+  - `d1fa874`: `fix(phase-2): resolve Gemini API timeout and add Vercel configuration`
 
 ---
 
