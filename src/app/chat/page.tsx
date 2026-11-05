@@ -4,6 +4,7 @@ import { useState, useEffect, useRef, useCallback, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { PageHeader } from "@/components/ui/PageHeader";
+import { MarkdownContent } from "@/components/chat/MarkdownContent";
 import { ChatMessage, ChatRequestBody, ChatResponseBody, ChatErrorResponse } from "@/types/chat";
 import { loadStoredChatHistory, saveChatHistory, clearStoredChatHistory } from "@/lib/storage";
 
@@ -399,13 +400,17 @@ function ChatContent() {
                 )}
 
                 <div
-                  className={`rounded-2xl px-4 py-3 text-sm leading-relaxed ${
+                  className={`rounded-2xl px-4 py-3 text-sm leading-relaxed min-w-0 max-w-full ${
                     msg.role === "user"
                       ? "bg-neutral-800 border border-amber-500/30 text-neutral-100 rounded-br-sm"
                       : "bg-[#121215] border border-neutral-800 text-neutral-200 rounded-bl-sm"
                   }`}
                 >
-                  <div className="whitespace-pre-wrap">{msg.content}</div>
+                  {msg.role === "assistant" ? (
+                    <MarkdownContent content={msg.content} />
+                  ) : (
+                    <div className="whitespace-pre-wrap">{msg.content}</div>
+                  )}
                   <div
                     className={`mt-1.5 text-[10px] font-mono text-neutral-500 ${
                       msg.role === "user" ? "text-right" : "text-left"
