@@ -1,6 +1,8 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
+import Link from "next/link";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { ChatMessage, ChatRequestBody, ChatResponseBody, ChatErrorResponse } from "@/types/chat";
 import { loadStoredChatHistory, saveChatHistory, clearStoredChatHistory } from "@/lib/storage";
@@ -10,9 +12,19 @@ const suggestedQuestions = [
   "Explain aperture and how it affects depth of field.",
   "What is shutter speed and how do I prevent motion blur?",
   "Explain the exposure triangle and reciprocity.",
+  "Why are my indoor photos coming out blurry or yellow?",
+  "What are good starting settings for a sunset portrait?",
 ];
 
-export default function ChatPage() {
+function generateMessageId(prefix: "user" | "assistant"): string {
+  return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+}
+
+function getCurrentTimestamp(): number {
+  return Date.now();
+}
+
+function ChatContent() {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [inputText, setInputText] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -20,6 +32,7 @@ export default function ChatPage() {
   const [lastFailedMessage, setLastFailedMessage] = useState<string | null>(null);
   const [isClientLoaded, setIsClientLoaded] = useState(false);
 
+  const searchParams = useSearchParams();
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
 
@@ -42,6 +55,20 @@ export default function ChatPage() {
     return () => cancelAnimationFrame(frame);
   }, []);
 
+  // Handle URL query parameters for contextual questions (e.g. /chat?prompt=...)
+  useEffect(() => {
+    const promptParam = searchParams.get("prompt");
+    if (promptParam && promptParam.trim()) {
+      const frame = requestAnimationFrame(() => {
+        setInputText(promptParam.trim());
+        setTimeout(() => {
+          textareaRef.current?.focus();
+        }, 50);
+      });
+      return () => cancelAnimationFrame(frame);
+    }
+  }, [searchParams]);
+
   // Save chat history to localStorage whenever messages change (only after client load)
   useEffect(() => {
     if (isClientLoaded) {
@@ -50,7 +77,7 @@ export default function ChatPage() {
     }
   }, [messages, isClientLoaded, scrollToBottom]);
 
-  // Send message implementation
+  // Send message implementation with retry deduplication
   const handleSendMessage = async (textToSend: string, isRetry = false) => {
     const trimmed = textToSend.trim();
     if (!trimmed || isLoading) return;
@@ -68,10 +95,10 @@ export default function ChatPage() {
         : messages;
 
     const userMsg: ChatMessage = {
-      id: `user-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+      id: generateMessageId("user"),
       role: "user",
       content: trimmed,
-      timestamp: Date.now(),
+      timestamp: getCurrentTimestamp(),
     };
 
     // Optimistically update conversation
@@ -112,10 +139,10 @@ export default function ChatPage() {
 
       if ("reply" in data && data.reply) {
         const assistantMsg: ChatMessage = {
-          id: `assistant-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+          id: generateMessageId("assistant"),
           role: "assistant",
           content: data.reply,
-          timestamp: Date.now(),
+          timestamp: getCurrentTimestamp(),
         };
         setMessages((prev) => [...prev, assistantMsg]);
       } else {
@@ -128,7 +155,6 @@ export default function ChatPage() {
       setLastFailedMessage(trimmed);
     } finally {
       setIsLoading(false);
-      // Refocus input
       setTimeout(() => {
         textareaRef.current?.focus();
       }, 50);
@@ -168,18 +194,18 @@ export default function ChatPage() {
     <div className="flex flex-col min-h-[calc(100vh-4rem)]">
       {/* Page Header */}
       <PageHeader
-        badge="Phase 2 • Gemini AI Integration"
-        title="AI Photography Tutor"
-        description="Your interactive mentor for demystifying camera settings, diagnosing shooting errors, and understanding light."
+        badge="Phase 3 • Gemini 3.5 AI Integration"
+        title="AI Photography Mentor"
+        description="Your interactive tutor for camera settings, diagnosing shooting errors, and understanding optical physics in plain English."
       />
 
       {/* Chat Workspace */}
-      <div className="flex-1 mx-auto w-full max-w-5xl px-4 py-8 sm:px-6 lg:px-8">
-        <div className="flex flex-col h-[700px] rounded-2xl border border-neutral-800 bg-[#161619] shadow-xl overflow-hidden">
+      <div className="flex-1 mx-auto w-full max-w-5xl px-4 py-6 sm:px-6 lg:px-8">
+        <div className="flex flex-col h-[750px] rounded-2xl border border-neutral-800 bg-[#161619] shadow-2xl overflow-hidden">
           {/* Chat Window Header */}
           <div className="flex items-center justify-between border-b border-neutral-800 bg-[#121214] px-4 py-3 sm:px-6 sm:py-4">
             <div className="flex items-center gap-3">
-              <div className="relative flex h-9 w-9 items-center justify-center rounded-lg border border-amber-500/30 bg-neutral-900">
+              <div className="relative flex h-10 w-10 items-center justify-center rounded-xl border border-amber-500/30 bg-neutral-900 shadow-sm">
                 <svg
                   className="h-5 w-5 text-amber-500"
                   viewBox="0 0 24 24"
@@ -195,34 +221,40 @@ export default function ChatPage() {
                   <path d="M14.31 16H2.83" />
                   <path d="m16.62 12-5.74 9.94" />
                 </svg>
-                <span className="absolute -top-0.5 -right-0.5 h-2 w-2 rounded-full bg-emerald-500" />
+                <span className="absolute -top-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-emerald-500 ring-2 ring-[#121214]" />
               </div>
               <div>
                 <h2 className="text-sm font-semibold text-neutral-100 flex items-center gap-2">
                   ShutterWise Mentor
-                  <span className="rounded bg-amber-500/10 px-2 py-0.5 text-[10px] font-mono text-amber-400 border border-amber-500/30">
-                    Gemini Connected
+                  <span className="rounded-full bg-amber-500/10 px-2 py-0.5 text-[10px] font-mono text-amber-400 border border-amber-500/30">
+                    Gemini 3.5 Flash Lite
                   </span>
                 </h2>
                 <p className="text-xs text-neutral-400">
-                  Status: <span className="text-emerald-400">Ready</span> • Explain the *Why*, not just *What*
+                  Status: <span className="text-emerald-400 font-medium">Ready</span> • Explain the <em className="text-amber-400 not-italic font-semibold">Why</em>, not just the What
                 </p>
               </div>
             </div>
 
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
+              <Link
+                href="/learn"
+                className="hidden sm:inline-flex items-center gap-1 rounded-lg border border-neutral-800 bg-neutral-900/60 px-3 py-1.5 text-xs text-neutral-300 hover:text-white hover:border-neutral-700 transition-colors"
+              >
+                Curriculum
+              </Link>
               {messages.length > 0 && (
                 <button
                   type="button"
                   onClick={handleClearChat}
-                  className="inline-flex items-center gap-1.5 rounded-lg border border-neutral-700 bg-neutral-800/80 px-2.5 py-1 text-xs text-neutral-300 hover:border-neutral-600 hover:text-white transition-colors"
+                  className="inline-flex items-center gap-1.5 rounded-lg border border-neutral-700 bg-neutral-800/80 px-2.5 py-1.5 text-xs text-neutral-300 hover:border-rose-500/50 hover:text-rose-300 transition-colors"
                   title="Clear conversation history from browser storage"
                   aria-label="Clear chat history"
                 >
-                  <svg className="h-3.5 w-3.5 text-neutral-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                   </svg>
-                  <span className="hidden sm:inline">Clear Chat</span>
+                  <span>Clear</span>
                 </button>
               )}
             </div>
@@ -237,7 +269,7 @@ export default function ChatPage() {
           >
             {/* Initial Welcome Banner if no conversation history */}
             {messages.length === 0 && (
-              <div className="rounded-xl border border-neutral-800/90 bg-[#121215] p-6 max-w-2xl mx-auto text-center sm:text-left mt-2">
+              <div className="rounded-2xl border border-neutral-800/90 bg-[#121215] p-6 max-w-2xl mx-auto text-center sm:text-left mt-2">
                 <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4">
                   <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-400">
                     <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.75">
@@ -246,14 +278,36 @@ export default function ChatPage() {
                   </div>
                   <div>
                     <h3 className="text-base font-bold text-neutral-100">
-                      Welcome to the ShutterWise Photography Mentor
+                      Welcome to ShutterWise Photography Mentor
                     </h3>
-                    <p className="mt-2 text-sm leading-relaxed text-neutral-300">
+                    <p className="mt-2 text-xs leading-relaxed text-neutral-300">
                       Ask me about camera dials, exposure dilemmas, lighting qualities, or why your photos look blurry, noisy, or dark. I explain the optical principles and physical trade-offs behind every setting.
                     </p>
-                    <div className="mt-4 rounded-lg bg-neutral-900 p-3 text-xs text-neutral-400 border border-neutral-800 font-mono">
+                    <div className="mt-3.5 rounded-lg bg-neutral-900 p-2.5 text-[11px] text-neutral-400 border border-neutral-800 font-mono">
                       <span className="text-amber-400 font-semibold">Core Principle:</span> Explain the *Why*, not just the *What*.
                     </div>
+                  </div>
+                </div>
+
+                {/* Suggested Questions Grid */}
+                <div className="mt-6 border-t border-neutral-800 pt-4">
+                  <span className="text-[11px] font-mono uppercase tracking-wider text-neutral-400 block mb-2.5 font-semibold">
+                    Popular Starter Questions:
+                  </span>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    {suggestedQuestions.map((q, i) => (
+                      <button
+                        key={i}
+                        type="button"
+                        onClick={() => handleSendMessage(q)}
+                        className="rounded-xl border border-neutral-800 bg-neutral-900/60 p-2.5 text-left text-xs text-neutral-300 hover:border-amber-500/40 hover:text-amber-300 hover:bg-neutral-800/60 transition-all flex items-center justify-between group"
+                      >
+                        <span className="line-clamp-1">{q}</span>
+                        <svg className="h-3.5 w-3.5 text-neutral-500 group-hover:text-amber-400 flex-shrink-0 ml-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+                        </svg>
+                      </button>
+                    ))}
                   </div>
                 </div>
               </div>
@@ -357,64 +411,42 @@ export default function ChatPage() {
               </div>
             )}
 
-            {/* Suggested Prompts Section */}
-            {messages.length === 0 && (
-              <div className="max-w-2xl mx-auto pt-2">
-                <span className="block text-xs font-mono uppercase tracking-wider text-neutral-400 mb-3">
-                  Suggested Questions:
-                </span>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                  {suggestedQuestions.map((q, idx) => (
-                    <button
-                      key={idx}
-                      type="button"
-                      onClick={() => handleSendMessage(q)}
-                      disabled={isLoading}
-                      className="flex items-center justify-between text-left rounded-xl border border-neutral-800 bg-neutral-900/60 p-3 text-xs text-neutral-300 hover:border-amber-500/40 hover:bg-neutral-800 hover:text-amber-300 transition-colors disabled:opacity-50"
-                    >
-                      <span>{q}</span>
-                      <span className="text-amber-500/60 text-sm ml-2">↳</span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-
             <div ref={messagesEndRef} />
           </div>
 
-          {/* Message Input Area */}
+          {/* Chat Input Bar */}
           <div className="border-t border-neutral-800 bg-[#121214] p-3 sm:p-4">
-            <form onSubmit={handleSubmit} className="relative max-w-3xl mx-auto">
-              <div className="flex items-end gap-2">
+            <form onSubmit={handleSubmit} className="flex flex-col gap-2">
+              <div className="relative flex items-center">
                 <textarea
                   ref={textareaRef}
-                  rows={2}
                   value={inputText}
-                  onChange={(e) => setInputText(e.target.value.slice(0, 500))}
+                  onChange={(e) => setInputText(e.target.value)}
                   onKeyDown={handleKeyDown}
-                  disabled={isLoading}
-                  placeholder="Ask a photography question (e.g. Why is my photo blurry?)..."
-                  className="w-full resize-none rounded-xl border border-neutral-700 bg-neutral-900 px-4 py-2.5 text-sm text-neutral-100 placeholder-neutral-500 focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500 disabled:opacity-50"
-                  aria-label="Photography query input"
+                  placeholder="Ask a photography question (e.g. 'Why is my photo blurry at 1/30s?')..."
+                  rows={2}
+                  maxLength={500}
+                  className="w-full resize-none rounded-xl border border-neutral-800 bg-neutral-900/90 px-4 py-3 pr-14 text-sm text-neutral-100 placeholder-neutral-500 focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500 transition-colors"
                 />
                 <button
                   type="submit"
                   disabled={!inputText.trim() || isLoading}
-                  className="inline-flex h-11 items-center justify-center rounded-xl bg-amber-500 px-5 text-sm font-semibold text-neutral-950 transition-all hover:bg-amber-400 disabled:opacity-40 disabled:hover:bg-amber-500 cursor-pointer disabled:cursor-not-allowed"
-                  aria-label="Send query"
+                  className="absolute right-2.5 bottom-3.5 inline-flex h-9 w-9 items-center justify-center rounded-lg bg-amber-500 text-neutral-950 transition-all hover:bg-amber-400 active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed shadow-sm shadow-amber-500/20"
+                  aria-label="Send message"
                 >
-                  <span>Send</span>
-                  <svg className="ml-1.5 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                  <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" />
                   </svg>
                 </button>
               </div>
 
-              <div className="mt-2 flex items-center justify-between text-[11px] font-mono text-neutral-400">
-                <span>Enter to send • Shift+Enter for newline</span>
-                <span className={inputText.length >= 480 ? "text-amber-400 font-semibold" : ""}>
-                  {inputText.length} / 500 chars
+              <div className="flex items-center justify-between text-[11px] font-mono text-neutral-500 px-1">
+                <span className="hidden sm:inline">
+                  Press <kbd className="rounded border border-neutral-700 bg-neutral-800 px-1 py-0.5 text-neutral-400">Enter</kbd> to send, <kbd className="rounded border border-neutral-700 bg-neutral-800 px-1 py-0.5 text-neutral-400">Shift+Enter</kbd> for new line
+                </span>
+                <span className="sm:hidden">Tap send icon</span>
+                <span className={inputText.length > 450 ? "text-amber-400 font-bold" : ""}>
+                  {inputText.length} / 500
                 </span>
               </div>
             </form>
@@ -422,5 +454,19 @@ export default function ChatPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function ChatPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex items-center justify-center min-h-[60vh] text-neutral-400 text-sm font-mono">
+          Loading AI Mentor...
+        </div>
+      }
+    >
+      <ChatContent />
+    </Suspense>
   );
 }

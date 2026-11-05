@@ -1,6 +1,12 @@
 import Link from "next/link";
 import { FeatureCard } from "@/components/ui/FeatureCard";
 
+export const metadata = {
+  title: "ShutterWise AI — Understand Light. Master Your Camera. Capture Better.",
+  description:
+    "An AI-powered photography learning platform that explains camera settings, exposure, lighting, and photography techniques with plain-English optical physics.",
+};
+
 export default function HomePage() {
   return (
     <div className="flex flex-col">
@@ -18,18 +24,18 @@ export default function HomePage() {
                   <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-amber-400 opacity-75" />
                   <span className="relative inline-flex h-2 w-2 rounded-full bg-amber-500" />
                 </span>
-                Photography Education Reimagined
+                Understand Light. Master Your Camera. Capture Better.
               </div>
 
               <h1 className="mt-6 text-4xl font-extrabold tracking-tight text-neutral-100 sm:text-5xl lg:text-6xl">
-                Understand Your Camera.{" "}
+                Master Manual Control.{" "}
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 via-amber-200 to-amber-500">
-                  Capture with Confidence.
+                  Explain the Why, Not Just the What.
                 </span>
               </h1>
 
               <p className="mt-6 text-lg leading-relaxed text-neutral-300 max-w-2xl mx-auto lg:mx-0">
-                Learn photography from the ground up. Understand exposure, master camera settings, and discover how light transforms your photographs — with clear, intuitive fundamentals instead of guesswork.
+                Transition from Auto mode with confidence. Discover how Aperture, Shutter Speed, and ISO interact in optical reciprocity, diagnose ruined photos in seconds, and learn with an AI mentor.
               </p>
 
               <div className="mt-8 flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4">
@@ -44,26 +50,32 @@ export default function HomePage() {
                 </Link>
 
                 <Link
-                  href="/recommendations"
-                  className="w-full sm:w-auto inline-flex items-center justify-center rounded-xl border border-neutral-700 bg-neutral-900/80 px-6 py-3.5 text-base font-medium text-neutral-200 transition-colors hover:border-neutral-600 hover:bg-neutral-800"
+                  href="/chat"
+                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl border border-neutral-700 bg-neutral-900/80 px-6 py-3.5 text-base font-medium text-neutral-200 transition-colors hover:border-amber-500/50 hover:bg-neutral-800 hover:text-amber-300"
                 >
-                  Explore Photography Guides
+                  <svg className="h-4 w-4 text-amber-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <circle cx="12" cy="12" r="10" />
+                    <path d="m14.31 8 5.74 9.94" />
+                    <path d="M9.69 8h11.48" />
+                    <path d="m7.38 12 5.74-9.94" />
+                  </svg>
+                  Ask AI Mentor
                 </Link>
               </div>
 
               {/* Quick stats/principles bar */}
               <div className="mt-12 grid grid-cols-3 gap-4 border-t border-neutral-800/80 pt-6 text-left">
                 <div>
-                  <div className="font-mono text-xl sm:text-2xl font-bold text-neutral-100">100%</div>
-                  <div className="text-xs text-neutral-400 mt-0.5">Free Learning (₹0)</div>
+                  <div className="font-mono text-xl sm:text-2xl font-bold text-neutral-100">6 Modules</div>
+                  <div className="text-xs text-neutral-400 mt-0.5">Phase 3 Knowledge Hub</div>
                 </div>
                 <div>
-                  <div className="font-mono text-xl sm:text-2xl font-bold text-amber-400">3 Pillars</div>
-                  <div className="text-xs text-neutral-400 mt-0.5">Aperture • Shutter • ISO</div>
+                  <div className="font-mono text-xl sm:text-2xl font-bold text-amber-400">Gemini 3.5</div>
+                  <div className="text-xs text-neutral-400 mt-0.5">Live Photography Mentor</div>
                 </div>
                 <div>
-                  <div className="font-mono text-xl sm:text-2xl font-bold text-neutral-100">Explain Why</div>
-                  <div className="text-xs text-neutral-400 mt-0.5">Not just dials, but optics</div>
+                  <div className="font-mono text-xl sm:text-2xl font-bold text-neutral-100">100% Free</div>
+                  <div className="text-xs text-neutral-400 mt-0.5">Zero-cost learning (₹0)</div>
                 </div>
               </div>
             </div>
@@ -87,16 +99,16 @@ export default function HomePage() {
                     <div className="border-r border-b border-neutral-400" />
                     <div className="border-r border-b border-neutral-400" />
                     <div className="border-b border-neutral-400" />
-                    <div className="border-r border-neutral-400" />
+                    <div className="border-r border-b border-neutral-400" />
                     <div className="border-r border-neutral-400" />
                     <div />
                   </div>
 
                   {/* Top HUD */}
                   <div className="relative z-10 flex items-center justify-between text-[11px] font-mono text-neutral-400">
-                    <span className="flex items-center gap-1.5 text-emerald-400">
+                    <span className="flex items-center gap-1.5 text-emerald-400 font-semibold">
                       <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                      AF-C [TRACKING]
+                      AF-C [EYE TRACKING]
                     </span>
                     <span className="text-neutral-400">RAW 14-BIT</span>
                     <span className="text-amber-400 font-semibold">EV +0.0</span>
@@ -108,7 +120,7 @@ export default function HomePage() {
                       <div className="h-2 w-2 rounded-full bg-amber-400" />
                     </div>
                     <span className="mt-2 text-[10px] font-mono text-neutral-400 tracking-wider">
-                      50mm • OPTICAL HARMONY
+                      50mm • APERTURE PRIORITY
                     </span>
                   </div>
 
@@ -116,16 +128,16 @@ export default function HomePage() {
                   <div className="relative z-10 rounded-lg bg-neutral-900/90 border border-neutral-800 p-2 text-center">
                     <div className="grid grid-cols-3 divide-x divide-neutral-800 text-xs font-mono">
                       <div>
-                        <span className="block text-[9px] uppercase tracking-wider text-neutral-400">Shutter</span>
-                        <span className="font-bold text-amber-400">1/500s</span>
+                        <span className="block text-[9px] uppercase tracking-wider text-neutral-400">Aperture</span>
+                        <span className="font-bold text-amber-400">f/2.8</span>
                       </div>
                       <div>
-                        <span className="block text-[9px] uppercase tracking-wider text-neutral-400">Aperture</span>
-                        <span className="font-bold text-neutral-100">f/2.8</span>
+                        <span className="block text-[9px] uppercase tracking-wider text-neutral-400">Shutter</span>
+                        <span className="font-bold text-sky-400">1/500s</span>
                       </div>
                       <div>
                         <span className="block text-[9px] uppercase tracking-wider text-neutral-400">ISO</span>
-                        <span className="font-bold text-neutral-100">200</span>
+                        <span className="font-bold text-emerald-400">100</span>
                       </div>
                     </div>
                   </div>
@@ -133,7 +145,7 @@ export default function HomePage() {
 
                 {/* Viewfinder caption */}
                 <div className="mt-3 flex items-center justify-between px-1 text-xs text-neutral-400 font-mono">
-                  <span>Balanced Natural Exposure</span>
+                  <span>Daylight Portrait Equilibrium</span>
                   <span className="text-amber-500">EV100: 12.0</span>
                 </div>
               </div>
@@ -142,55 +154,61 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Features Section */}
+      {/* Four Core Platforms Features Grid */}
       <section className="py-20 sm:py-24 bg-[#121212]">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="max-w-2xl">
             <span className="text-xs font-mono uppercase tracking-wider text-amber-500">
-              Core Capabilities
+              Platform Features
             </span>
             <h2 className="mt-2 text-3xl font-bold tracking-tight text-neutral-100 sm:text-4xl">
-              Engineered for Complete Photographic Clarity
+              Everything You Need to Master Photography
             </h2>
             <p className="mt-3 text-base text-neutral-300">
-              Explore specialized modules crafted to eliminate confusion and turn complex camera mechanics into second nature.
+              From structured fundamentals and real-world presets to interactive tools and direct AI mentorship.
             </p>
           </div>
 
-          <div className="mt-12 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {/* 1. AI Photography Tutor */}
+          <div className="mt-12 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            {/* 1. Knowledge Hub */}
             <FeatureCard
-              title="AI Photography Tutor"
-              description="Ask specific questions about camera dials, exposure dilemmas, and composition. Powered by Gemini with structured troubleshooting."
-              badge="Phase 2 Preview"
-              isComingSoon={true}
-              href="/chat"
-              icon={
-                <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.75">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 01-2.555-.337A5.972 5.972 0 015.41 20.97a.75.75 0 01-.84-.84c.18-.89.362-1.78.435-2.673C3.65 16.038 3 14.11 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25z" />
-                </svg>
-              }
-            />
-
-            {/* 2. Exposure Triangle */}
-            <FeatureCard
-              title="The Exposure Triangle"
-              description="Discover how ISO, Aperture, and Shutter Speed interact like balancing weights to govern light, depth, and motion blur."
-              badge="Fundamental Guide"
+              title="Knowledge Hub"
+              description="Six structured interactive modules covering ISO, Aperture, Shutter, Exposure Triangle, Lighting, and Troubleshooting."
+              badge="Phase 3 Live"
               isComingSoon={false}
               href="/learn"
               icon={
                 <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.75">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 3L2 21h20L12 3z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" />
+                </svg>
+              }
+            />
+
+            {/* 2. AI Mentor */}
+            <FeatureCard
+              title="AI Photography Mentor"
+              description="Ask specific questions about dials, lighting angles, or blurry photos. Powered by Gemini 3.5 with 6-part troubleshooting."
+              badge="Live AI"
+              isComingSoon={false}
+              href="/chat"
+              icon={
+                <svg className="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75">
+                  <circle cx="12" cy="12" r="10" />
+                  <path d="m14.31 8 5.74 9.94" />
+                  <path d="M9.69 8h11.48" />
+                  <path d="m7.38 12 5.74-9.94" />
+                  <path d="M9.69 16 3.95 6.06" />
+                  <path d="M14.31 16H2.83" />
+                  <path d="m16.62 12-5.74 9.94" />
                 </svg>
               }
             />
 
             {/* 3. Exposure Calculator */}
             <FeatureCard
-              title="Exposure Calculator"
-              description="Deterministic optical calculation of standard EV100 and equivalent exposure reciprocity without guesswork."
-              badge="Phase 4 Preview"
+              title="Optical Calculator"
+              description="Calculate standard Exposure Values (EV100) and explore equivalent reciprocity settings across shutter and aperture."
+              badge="Optical Math"
               isComingSoon={false}
               href="/calculator"
               icon={
@@ -200,11 +218,11 @@ export default function HomePage() {
               }
             />
 
-            {/* 4. Camera Settings Guide */}
+            {/* 4. Scenario Guide */}
             <FeatureCard
-              title="Camera Settings Guide"
-              description="Pragmatic baseline starting configurations for Portraits, Landscapes, Street, Night, Sports, and Indoor scenes."
-              badge="Ready to Explore"
+              title="Settings Guide"
+              description="Field-ready starting baselines for portraits, landscapes, street, action sports, indoor events, and night photography."
+              badge="Field Presets"
               isComingSoon={false}
               href="/recommendations"
               icon={
@@ -214,172 +232,162 @@ export default function HomePage() {
                 </svg>
               }
             />
-
-            {/* 5. Lighting Tutor */}
-            <FeatureCard
-              title="Lighting Tutor"
-              description="Learn to read light quality: hard vs soft light, key directional angles (front, side, rim), and golden hour dynamics."
-              badge="Phase 5 Planned"
-              isComingSoon={true}
-              icon={
-                <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.75">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 18v-5.25m0 0a6.01 6.01 0 001.5-.189m-1.5.189a6.01 6.01 0 01-1.5-.189m3.75 7.478a12.06 12.06 0 01-4.5 0m3.75 2.383a14.406 14.406 0 01-3 0M14.25 18v-.192c0-.983.658-1.823 1.508-2.316a7.5 7.5 0 10-7.516 0c.85.493 1.508 1.333 1.508 2.316V18" />
-                </svg>
-              }
-            />
-
-            {/* 6. Photography Troubleshooting */}
-            <FeatureCard
-              title="Photography Troubleshooting"
-              description="Diagnose blurry photos, unwanted digital noise, washed-out highlights, and focus hunting with step-by-step logic."
-              badge="Phase 3 Planned"
-              isComingSoon={true}
-              icon={
-                <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.75">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M11.42 15.17L17.25 21A2.652 2.652 0 0021 17.25l-5.877-5.877M11.42 15.17l2.496-3.03c.317-.384.74-.626 1.208-.766M11.42 15.17l-4.655 5.653a2.548 2.548 0 11-3.586-3.586l6.837-5.63m5.108-.233c.55-.164 1.163-.188 1.743-.07a4.5 4.5 0 004.486-6.32l-3.27 3.27a1.5 1.5 0 01-2.121 0l-1.061-1.06a1.5 1.5 0 010-2.122l3.27-3.27A4.5 4.5 0 0012.7 6.471c-.118.58-.094 1.193.07 1.743" />
-                </svg>
-              }
-            />
           </div>
         </div>
       </section>
 
-      {/* Learning Topics Overview */}
+      {/* Featured Photography Concepts Grid */}
       <section className="py-20 bg-[#161619] border-y border-neutral-800/80">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
             <div>
               <span className="text-xs font-mono uppercase tracking-wider text-amber-500">
-                Core Curriculum
+                Core Optical Pillars
               </span>
               <h2 className="mt-2 text-3xl font-bold tracking-tight text-neutral-100 sm:text-4xl">
-                Master the Core Elements
+                Explore the Foundations
               </h2>
               <p className="mt-2 text-base text-neutral-300">
-                Understand the physical principles governing every photograph you capture.
+                Click any pillar to jump directly into its dedicated lesson, diagrams, and quiz.
               </p>
             </div>
             <Link
               href="/learn"
               className="inline-flex items-center gap-1.5 text-sm font-semibold text-amber-400 hover:text-amber-300 transition-colors"
             >
-              View Full Learning Catalog
+              Explore All 6 Modules
               <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
               </svg>
             </Link>
           </div>
 
-          <div className="mt-12 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            {/* Topic 1: ISO */}
-            <div className="rounded-xl border border-neutral-800 bg-[#121214] p-5">
-              <span className="font-mono text-xs text-amber-400 font-semibold">ELEMENT 01</span>
-              <h3 className="mt-2 text-lg font-bold text-neutral-100">ISO Sensitivity</h3>
-              <p className="mt-2 text-xs leading-relaxed text-neutral-300">
-                Measures sensor signal amplification. Lower ISO (100) yields clean, noise-free images; higher ISO (3200+) enables low-light shooting with digital grain trade-offs.
-              </p>
-              <div className="mt-4 pt-3 border-t border-neutral-800 flex items-center justify-between text-[11px] font-mono text-neutral-400">
-                <span>Baseline: ISO 100</span>
-                <span className="text-amber-400/80">Signal Gain</span>
+          <div className="mt-12 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {/* 1. ISO */}
+            <Link
+              href="/learn/iso"
+              className="group rounded-2xl border border-neutral-800 bg-[#121214] p-6 hover:border-amber-500/40 hover:bg-neutral-900 transition-all"
+            >
+              <div className="flex items-center justify-between text-xs font-mono">
+                <span className="text-amber-400 font-bold">PILLAR 01</span>
+                <span className="text-neutral-500">8 min</span>
               </div>
-            </div>
-
-            {/* Topic 2: Aperture */}
-            <div className="rounded-xl border border-neutral-800 bg-[#121214] p-5">
-              <span className="font-mono text-xs text-amber-400 font-semibold">ELEMENT 02</span>
-              <h3 className="mt-2 text-lg font-bold text-neutral-100">Aperture (f-stop)</h3>
-              <p className="mt-2 text-xs leading-relaxed text-neutral-300">
-                The optical diaphragm opening. Wide apertures (f/1.8) let in abundant light and blur backgrounds; narrow apertures (f/11) keep front-to-back scenery sharp.
-              </p>
-              <div className="mt-4 pt-3 border-t border-neutral-800 flex items-center justify-between text-[11px] font-mono text-neutral-400">
-                <span>Controls: Depth of Field</span>
-                <span className="text-amber-400/80">Light Volume</span>
-              </div>
-            </div>
-
-            {/* Topic 3: Shutter Speed */}
-            <div className="rounded-xl border border-neutral-800 bg-[#121214] p-5">
-              <span className="font-mono text-xs text-amber-400 font-semibold">ELEMENT 03</span>
-              <h3 className="mt-2 text-lg font-bold text-neutral-100">Shutter Speed</h3>
-              <p className="mt-2 text-xs leading-relaxed text-neutral-300">
-                The time duration the sensor is exposed to light. Fast speeds (1/1000s) freeze erratic action; slow speeds (1/2s) introduce deliberate motion blur or light trails.
-              </p>
-              <div className="mt-4 pt-3 border-t border-neutral-800 flex items-center justify-between text-[11px] font-mono text-neutral-400">
-                <span>Controls: Motion</span>
-                <span className="text-amber-400/80">Duration</span>
-              </div>
-            </div>
-
-            {/* Topic 4: Exposure Triangle */}
-            <div className="rounded-xl border border-neutral-800 bg-[#121214] p-5">
-              <span className="font-mono text-xs text-amber-400 font-semibold">ELEMENT 04</span>
-              <h3 className="mt-2 text-lg font-bold text-neutral-100">Exposure Triangle</h3>
-              <p className="mt-2 text-xs leading-relaxed text-neutral-300">
-                The three controls exist in constant mathematical equilibrium. Changing one setting requires reciprocal compensation from another to preserve exposure balance.
-              </p>
-              <div className="mt-4 pt-3 border-t border-neutral-800 flex items-center justify-between text-[11px] font-mono text-neutral-400">
-                <span>Rule: Reciprocity</span>
-                <span className="text-amber-400/80">Total Balance</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* How It Works Section */}
-      <section className="py-20 sm:py-24 bg-[#121212]">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="text-center max-w-2xl mx-auto">
-            <span className="text-xs font-mono uppercase tracking-wider text-amber-500">
-              The Learning Journey
-            </span>
-            <h2 className="mt-2 text-3xl font-bold tracking-tight text-neutral-100 sm:text-4xl">
-              Three Simple Steps to Creative Freedom
-            </h2>
-            <p className="mt-3 text-base text-neutral-300">
-              Transforming confusing technical numbers into confident photographic decisions.
-            </p>
-          </div>
-
-          <div className="mt-16 grid grid-cols-1 gap-8 md:grid-cols-3 relative">
-            {/* Step 1 */}
-            <div className="relative flex flex-col items-center text-center p-6 rounded-2xl border border-neutral-800 bg-[#161619]">
-              <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-amber-500/40 bg-amber-500/10 text-amber-400 font-mono text-xl font-bold">
-                01
-              </div>
-              <h3 className="mt-6 text-xl font-semibold text-neutral-100">
-                Learn Photography Fundamentals
+              <h3 className="mt-3 text-lg font-bold text-neutral-100 group-hover:text-amber-300 transition-colors">
+                ISO & Sensor Signal Gain
               </h3>
-              <p className="mt-3 text-sm leading-relaxed text-neutral-300">
-                Master the optical foundation: understand how light enters the lens, how apertures shape depth of field, and why shutter speeds define motion.
+              <p className="mt-2 text-xs leading-relaxed text-neutral-300">
+                How electronic amplification affects brightness, why high ISO causes digital noise, and when to stick to Base ISO.
               </p>
-            </div>
-
-            {/* Step 2 */}
-            <div className="relative flex flex-col items-center text-center p-6 rounded-2xl border border-neutral-800 bg-[#161619]">
-              <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-amber-500/40 bg-amber-500/10 text-amber-400 font-mono text-xl font-bold">
-                02
+              <div className="mt-4 pt-3 border-t border-neutral-800 flex items-center justify-between text-[11px] font-mono text-neutral-400">
+                <span>Base: ISO 100</span>
+                <span className="text-amber-400">Learn ISO →</span>
               </div>
-              <h3 className="mt-6 text-xl font-semibold text-neutral-100">
-                Understand Camera Settings
-              </h3>
-              <p className="mt-3 text-sm leading-relaxed text-neutral-300">
-                Demystify camera dials and shooting modes. Learn when to choose Aperture Priority, Shutter Priority, or Manual mode based on the scene.
-              </p>
-            </div>
+            </Link>
 
-            {/* Step 3 */}
-            <div className="relative flex flex-col items-center text-center p-6 rounded-2xl border border-neutral-800 bg-[#161619]">
-              <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-amber-500/40 bg-amber-500/10 text-amber-400 font-mono text-xl font-bold">
-                03
+            {/* 2. Aperture */}
+            <Link
+              href="/learn/aperture"
+              className="group rounded-2xl border border-neutral-800 bg-[#121214] p-6 hover:border-amber-500/40 hover:bg-neutral-900 transition-all"
+            >
+              <div className="flex items-center justify-between text-xs font-mono">
+                <span className="text-amber-400 font-bold">PILLAR 02</span>
+                <span className="text-neutral-500">9 min</span>
               </div>
-              <h3 className="mt-6 text-xl font-semibold text-neutral-100">
-                Practise and Improve Your Photos
+              <h3 className="mt-3 text-lg font-bold text-neutral-100 group-hover:text-amber-300 transition-colors">
+                Aperture & Depth of Field
               </h3>
-              <p className="mt-3 text-sm leading-relaxed text-neutral-300">
-                Take your camera into the field with scenario baselines, troubleshoot common mistakes, and capture sharp, stunning images with confidence.
+              <p className="mt-2 text-xs leading-relaxed text-neutral-300">
+                Understand why small f-numbers mean large openings, how to achieve creamy bokeh, and how to avoid lens diffraction.
               </p>
-            </div>
+              <div className="mt-4 pt-3 border-t border-neutral-800 flex items-center justify-between text-[11px] font-mono text-neutral-400">
+                <span>Scale: f/1.4 – f/16</span>
+                <span className="text-amber-400">Learn Aperture →</span>
+              </div>
+            </Link>
+
+            {/* 3. Shutter Speed */}
+            <Link
+              href="/learn/shutter-speed"
+              className="group rounded-2xl border border-neutral-800 bg-[#121214] p-6 hover:border-amber-500/40 hover:bg-neutral-900 transition-all"
+            >
+              <div className="flex items-center justify-between text-xs font-mono">
+                <span className="text-amber-400 font-bold">PILLAR 03</span>
+                <span className="text-neutral-500">9 min</span>
+              </div>
+              <h3 className="mt-3 text-lg font-bold text-neutral-100 group-hover:text-amber-300 transition-colors">
+                Shutter Speed & Motion
+              </h3>
+              <p className="mt-2 text-xs leading-relaxed text-neutral-300">
+                Freezing high-speed athletic motion, avoiding handheld camera shake with the reciprocal rule, and capturing silky waterfalls.
+              </p>
+              <div className="mt-4 pt-3 border-t border-neutral-800 flex items-center justify-between text-[11px] font-mono text-neutral-400">
+                <span>Rule: 1 / Focal Length</span>
+                <span className="text-amber-400">Learn Shutter →</span>
+              </div>
+            </Link>
+
+            {/* 4. Exposure Triangle */}
+            <Link
+              href="/learn/exposure-triangle"
+              className="group rounded-2xl border border-neutral-800 bg-[#121214] p-6 hover:border-amber-500/40 hover:bg-neutral-900 transition-all"
+            >
+              <div className="flex items-center justify-between text-xs font-mono">
+                <span className="text-amber-400 font-bold">PILLAR 04</span>
+                <span className="text-neutral-500">10 min</span>
+              </div>
+              <h3 className="mt-3 text-lg font-bold text-neutral-100 group-hover:text-amber-300 transition-colors">
+                The Exposure Triangle
+              </h3>
+              <p className="mt-2 text-xs leading-relaxed text-neutral-300">
+                The balancing act of photography. Master exposure reciprocity, reading histograms, and dialing in Exposure Compensation.
+              </p>
+              <div className="mt-4 pt-3 border-t border-neutral-800 flex items-center justify-between text-[11px] font-mono text-neutral-400">
+                <span>Equilibrium: Reciprocity</span>
+                <span className="text-amber-400">Learn Triangle →</span>
+              </div>
+            </Link>
+
+            {/* 5. Lighting Fundamentals */}
+            <Link
+              href="/learn/lighting-fundamentals"
+              className="group rounded-2xl border border-neutral-800 bg-[#121214] p-6 hover:border-amber-500/40 hover:bg-neutral-900 transition-all"
+            >
+              <div className="flex items-center justify-between text-xs font-mono">
+                <span className="text-amber-400 font-bold">PILLAR 05</span>
+                <span className="text-neutral-500">9 min</span>
+              </div>
+              <h3 className="mt-3 text-lg font-bold text-neutral-100 group-hover:text-amber-300 transition-colors">
+                Lighting Fundamentals
+              </h3>
+              <p className="mt-2 text-xs leading-relaxed text-neutral-300">
+                Hard vs soft light, light direction (front, side, rim, back), and how Golden Hour and Blue Hour sculpt depth.
+              </p>
+              <div className="mt-4 pt-3 border-t border-neutral-800 flex items-center justify-between text-[11px] font-mono text-neutral-400">
+                <span>Quality: Relative Size</span>
+                <span className="text-amber-400">Learn Lighting →</span>
+              </div>
+            </Link>
+
+            {/* 6. Troubleshooting */}
+            <Link
+              href="/learn/photography-troubleshooting"
+              className="group rounded-2xl border border-neutral-800 bg-[#121214] p-6 hover:border-amber-500/40 hover:bg-neutral-900 transition-all"
+            >
+              <div className="flex items-center justify-between text-xs font-mono">
+                <span className="text-amber-400 font-bold">PILLAR 06</span>
+                <span className="text-neutral-500">12 min</span>
+              </div>
+              <h3 className="mt-3 text-lg font-bold text-neutral-100 group-hover:text-amber-300 transition-colors">
+                10-Point Troubleshooting
+              </h3>
+              <p className="mt-2 text-xs leading-relaxed text-neutral-300">
+                Direct diagnostic fixes for dark images, camera shake, motion blur, noisy night shots, and unwanted color tints.
+              </p>
+              <div className="mt-4 pt-3 border-t border-neutral-800 flex items-center justify-between text-[11px] font-mono text-neutral-400">
+                <span>Methodology: 6-Part Fix</span>
+                <span className="text-amber-400">Diagnose Now →</span>
+              </div>
+            </Link>
           </div>
         </div>
       </section>
@@ -388,23 +396,26 @@ export default function HomePage() {
       <section className="border-t border-neutral-800/80 bg-gradient-to-r from-neutral-900 via-[#18181c] to-neutral-900 py-16">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-2xl sm:text-3xl font-bold text-neutral-100">
-            Ready to Take Control of Your Camera?
+            Ready to Take Creative Control of Your Camera?
           </h2>
           <p className="mt-3 text-neutral-300 text-sm sm:text-base max-w-xl mx-auto">
-            Step away from Auto mode. Start with the core exposure principles and build genuine creative control.
+            Stop relying on Auto mode. Start with the core exposure principles, test your knowledge with interactive quizzes, and consult the AI Mentor anytime.
           </p>
           <div className="mt-6 flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link
               href="/learn"
-              className="w-full sm:w-auto inline-flex items-center justify-center rounded-xl bg-amber-500 px-6 py-3 text-sm font-semibold text-neutral-950 hover:bg-amber-400 transition-colors"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl bg-amber-500 px-6 py-3.5 text-sm font-bold text-neutral-950 hover:bg-amber-400 transition-colors shadow-md shadow-amber-500/20"
             >
-              Begin Learning Modules
+              Start Learning Now
+              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+              </svg>
             </Link>
             <Link
               href="/chat"
-              className="w-full sm:w-auto inline-flex items-center justify-center rounded-xl border border-neutral-700 bg-neutral-800 px-6 py-3 text-sm font-medium text-neutral-300 hover:text-white hover:bg-neutral-700 transition-colors"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl border border-neutral-700 bg-neutral-800 px-6 py-3.5 text-sm font-medium text-neutral-200 hover:text-white hover:bg-neutral-700 transition-colors"
             >
-              Preview AI Tutor (Phase 2)
+              Chat with AI Mentor
             </Link>
           </div>
         </div>

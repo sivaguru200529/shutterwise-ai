@@ -32,12 +32,12 @@ export function Footer() {
               </span>
             </Link>
             <p className="mt-3 text-sm text-neutral-400 max-w-sm leading-relaxed">
-              Understand Light. Master Your Camera. Capture Better. An AI-powered photography learning assistant helping beginners transition from auto mode to creative manual control.
+              Understand Light. Master Your Camera. Capture Better. An AI-powered photography learning platform helping beginners transition from auto mode to creative manual control.
             </p>
             <div className="mt-4 flex items-center gap-2">
               <span className="inline-flex items-center gap-1.5 rounded-full bg-neutral-800/80 px-2.5 py-1 text-xs font-mono text-neutral-300 border border-neutral-700">
                 <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                Phase 1: Frontend Foundation
+                Phase 3: Knowledge Engine Active
               </span>
             </div>
           </div>
@@ -55,23 +55,23 @@ export function Footer() {
               </li>
               <li>
                 <Link href="/learn" className="hover:text-amber-400 transition-colors">
-                  Learning Modules
+                  Learning Catalog (6 Modules)
+                </Link>
+              </li>
+              <li>
+                <Link href="/chat" className="hover:text-amber-400 transition-colors flex items-center gap-1.5">
+                  AI Photography Mentor
+                  <span className="text-[10px] text-emerald-400 font-mono bg-emerald-500/10 px-1.5 py-0.2 rounded border border-emerald-500/20">Live</span>
                 </Link>
               </li>
               <li>
                 <Link href="/calculator" className="hover:text-amber-400 transition-colors">
-                  Exposure Calculator
+                  Exposure & EV Calculator
                 </Link>
               </li>
               <li>
                 <Link href="/recommendations" className="hover:text-amber-400 transition-colors">
                   Camera Settings Guide
-                </Link>
-              </li>
-              <li>
-                <Link href="/chat" className="hover:text-amber-400 transition-colors flex items-center gap-1.5">
-                  AI Photography Tutor
-                  <span className="text-[10px] text-amber-500/80 font-mono">(Coming Soon)</span>
                 </Link>
               </li>
             </ul>
@@ -80,70 +80,70 @@ export function Footer() {
           {/* Core Learning Topics */}
           <div>
             <h3 className="text-xs font-semibold uppercase tracking-wider text-neutral-200">
-              Key Fundamentals
+              Key Lessons
             </h3>
             <ul className="mt-3 space-y-2 text-sm">
               <li>
-                <Link href="/learn" className="hover:text-amber-400 transition-colors">
+                <Link href="/learn/iso" className="hover:text-amber-400 transition-colors">
+                  ISO & Signal Gain
+                </Link>
+              </li>
+              <li>
+                <Link href="/learn/aperture" className="hover:text-amber-400 transition-colors">
                   Aperture & Depth of Field
                 </Link>
               </li>
               <li>
-                <Link href="/learn" className="hover:text-amber-400 transition-colors">
+                <Link href="/learn/shutter-speed" className="hover:text-amber-400 transition-colors">
                   Shutter Speed & Motion
                 </Link>
               </li>
               <li>
-                <Link href="/learn" className="hover:text-amber-400 transition-colors">
-                  ISO & Sensor Grain
-                </Link>
-              </li>
-              <li>
-                <Link href="/learn" className="hover:text-amber-400 transition-colors">
+                <Link href="/learn/exposure-triangle" className="hover:text-amber-400 transition-colors">
                   The Exposure Triangle
                 </Link>
               </li>
               <li>
-                <Link href="/learn" className="hover:text-amber-400 transition-colors">
-                  Lighting Basics
+                <Link href="/learn/lighting-fundamentals" className="hover:text-amber-400 transition-colors">
+                  Lighting Fundamentals
+                </Link>
+              </li>
+              <li>
+                <Link href="/learn/photography-troubleshooting" className="hover:text-amber-400 transition-colors">
+                  10-Point Troubleshooting
                 </Link>
               </li>
             </ul>
           </div>
 
-          {/* Project & Architectural Ethics */}
+          {/* Ethics & Budget Notice */}
           <div>
             <h3 className="text-xs font-semibold uppercase tracking-wider text-neutral-200">
-              Architecture
+              Architecture & Transparency
             </h3>
-            <ul className="mt-3 space-y-2 text-sm text-neutral-400">
-              <li className="flex items-center gap-1.5">
-                <span className="text-amber-500">•</span> Zero-Cost Stack (₹0)
-              </li>
-              <li className="flex items-center gap-1.5">
-                <span className="text-amber-500">•</span> Next.js App Router
-              </li>
-              <li className="flex items-center gap-1.5">
-                <span className="text-amber-500">•</span> Tailwind CSS v4
-              </li>
-              <li className="flex items-center gap-1.5">
-                <span className="text-amber-500">•</span> Deterministic Math
-              </li>
-              <li className="flex items-center gap-1.5">
-                <span className="text-amber-500">•</span> Privacy First (Local-Only)
-              </li>
-            </ul>
+            <p className="mt-3 text-xs leading-relaxed text-neutral-400">
+              Built with Next.js App Router, Tailwind CSS, and Google Gemini 3.5 Flash Lite. Developed with ₹0 API budget and 100% free-tier verified models.
+            </p>
+            <div className="mt-4 rounded-lg border border-neutral-800 bg-neutral-900/50 p-2.5 text-[11px] font-mono text-neutral-400">
+              Explain the *Why*, not just the *What*.
+            </div>
           </div>
         </div>
 
-        <div className="mt-10 border-t border-neutral-800/80 pt-6 flex flex-col sm:flex-row items-center justify-between text-xs text-neutral-400">
-          <p>© 2026 ShutterWise AI. Understand Light. Master Your Camera. Capture Better.</p>
-          <p className="mt-2 sm:mt-0 font-mono text-neutral-400">
-            Phase 1 Completed • No AI APIs Connected
-          </p>
+        {/* Bottom bar */}
+        <div className="mt-12 border-t border-neutral-800/80 pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-neutral-500">
+          <p>© {new Date().getFullYear()} ShutterWise AI. All educational content strictly grounded in optical physics.</p>
+          <div className="flex items-center gap-4">
+            <Link href="/learn" className="hover:text-neutral-400 transition-colors">
+              Knowledge Hub
+            </Link>
+            <span>•</span>
+            <Link href="/chat" className="hover:text-neutral-400 transition-colors">
+              AI Mentor
+            </Link>
+          </div>
         </div>
       </div>
     </footer>
   );
 }
-
