@@ -70,8 +70,8 @@ export default function HomePage() {
                   <div className="text-xs text-neutral-400 mt-0.5">Phase 3 Knowledge Hub</div>
                 </div>
                 <div>
-                  <div className="font-mono text-xl sm:text-2xl font-bold text-amber-400">Gemini 3.5</div>
-                  <div className="text-xs text-neutral-400 mt-0.5">Live Photography Mentor</div>
+                  <div className="font-mono text-xl sm:text-2xl font-bold text-amber-400">GPT-OSS 20B</div>
+                  <div className="text-xs text-neutral-400 mt-0.5">Groq AI Mentor</div>
                 </div>
                 <div>
                   <div className="font-mono text-xl sm:text-2xl font-bold text-neutral-100">100% Free</div>
@@ -187,7 +187,7 @@ export default function HomePage() {
             {/* 2. AI Mentor */}
             <FeatureCard
               title="AI Photography Mentor"
-              description="Ask specific questions about dials, lighting angles, or blurry photos. Powered by Gemini 3.5 with 6-part troubleshooting."
+              description="Ask specific questions about dials, lighting angles, or blurry photos. Powered by Groq GPT-OSS 20B with 6-part troubleshooting."
               badge="Live AI"
               isComingSoon={false}
               href="/chat"

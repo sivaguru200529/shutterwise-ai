@@ -1,9 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
-import { isGeminiConfigured, sendPhotographyMessage, isTimeoutError, ChatHistoryItem } from "@/lib/gemini";
+import {
+  isGroqConfigured,
+  sendPhotographyMessage,
+  isTimeoutError,
+  isRateLimitError,
+  isAuthError,
+  isServiceUnavailableError,
+  ChatHistoryItem,
+} from "@/lib/groq";
 import { checkRateLimit } from "@/lib/rate-limiter";
 import { ChatRequestBody, ChatResponseBody, ChatErrorResponse } from "@/types/chat";
 
-// Vercel Serverless Function Configuration for Hobby plan
+// Vercel Serverless Function Configuration
 export const runtime = "nodejs";
 export const maxDuration = 60; // Max allowed duration on Vercel Hobby plan (seconds)
 
@@ -115,16 +123,16 @@ export async function POST(req: NextRequest) {
     }
 
     // 6. Check API configuration
-    if (!isGeminiConfigured()) {
+    if (!isGroqConfigured()) {
       const errorPayload: ChatErrorResponse = {
         error:
-          "Gemini API key is not configured on the server. Please add GEMINI_API_KEY to your .env.local file.",
+          "Groq API key is not configured on the server. Please add GROQ_API_KEY to your .env.local file.",
         code: "CONFIG_MISSING",
       };
       return NextResponse.json(errorPayload, { status: 503 });
     }
 
-    // 7. Dispatch to Gemini via server-side SDK
+    // 7. Dispatch to Groq via server-side SDK
     const reply = await sendPhotographyMessage(trimmedMessage, sanitizedHistory);
 
     const durationMs = Date.now() - startTime;
@@ -136,10 +144,10 @@ export async function POST(req: NextRequest) {
     const durationMs = Date.now() - startTime;
     const errorMessage = error instanceof Error ? error.message : String(error);
 
-    // Safe diagnostic logging: records timing and sanitized error category (never secrets or full payload)
+    // Diagnostic logging: records timing and categorized message (never secrets or full payload)
     console.error(`[ShutterWise /api/chat error] (${durationMs}ms):`, errorMessage);
 
-    if (isTimeoutError(errorMessage)) {
+    if (isTimeoutError(error)) {
       const errorPayload: ChatErrorResponse = {
         error: "The AI photography mentor timed out while generating a response. Please try again.",
         code: "GATEWAY_TIMEOUT",
@@ -147,20 +155,44 @@ export async function POST(req: NextRequest) {
       return NextResponse.json(errorPayload, { status: 504 });
     }
 
-    if (errorMessage.includes("429") || errorMessage.includes("RESOURCE_EXHAUSTED")) {
+    if (isRateLimitError(error)) {
       const errorPayload: ChatErrorResponse = {
-        error: "Google Gemini rate limit reached. Please wait a moment before trying again.",
+        error: "Groq rate limit reached. Please wait a moment before trying again.",
         code: "RATE_LIMITED",
       };
       return NextResponse.json(errorPayload, { status: 429 });
     }
 
-    if (errorMessage.includes("503") || errorMessage.includes("UNAVAILABLE")) {
+    if (isAuthError(error)) {
+      const errorPayload: ChatErrorResponse = {
+        error: "AI service authentication error. Please check server configuration.",
+        code: "SERVER_ERROR",
+      };
+      return NextResponse.json(errorPayload, { status: 500 });
+    }
+
+    if (isServiceUnavailableError(error)) {
       const errorPayload: ChatErrorResponse = {
         error: "The AI photography mentor is currently unreachable. Please try again shortly.",
         code: "SERVICE_UNAVAILABLE",
       };
       return NextResponse.json(errorPayload, { status: 503 });
+    }
+
+    if (errorMessage.includes("model_not_found") || errorMessage.includes("does not exist")) {
+      const errorPayload: ChatErrorResponse = {
+        error: "The configured AI model is unavailable or unrecognized. Please check GROQ_MODEL.",
+        code: "SERVER_ERROR",
+      };
+      return NextResponse.json(errorPayload, { status: 500 });
+    }
+
+    if (errorMessage.includes("EMPTY_RESPONSE")) {
+      const errorPayload: ChatErrorResponse = {
+        error: "The AI mentor returned an empty response. Please try rephrasing your question.",
+        code: "SERVER_ERROR",
+      };
+      return NextResponse.json(errorPayload, { status: 500 });
     }
 
     const fallbackPayload: ChatErrorResponse = {

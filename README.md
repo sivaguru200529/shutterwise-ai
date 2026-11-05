@@ -11,7 +11,7 @@ ShutterWise AI is an AI-powered photography learning platform designed to help b
 - **Demystify Exposure Mechanics:** Provide clear, intuitive mental models of how Aperture, Shutter Speed, and ISO interact optically.
 - **Explain the *Why*:** Never present black-box camera numbers without teaching the optical principles, sensor tradeoffs, and ambient lighting conditions behind them.
 - **Interactive Knowledge Engine:** Six comprehensive learning modules with real-world scenarios, settings breakdowns, common mistake corrections, and self-scoring knowledge checks.
-- **Contextual AI Mentorship:** An integrated Gemini 3.5 AI assistant capable of contextual advice directly from lessons and troubleshooting cards.
+- **Contextual AI Mentorship:** An integrated Groq-powered AI assistant (`openai/gpt-oss-20b`) capable of contextual advice directly from lessons and troubleshooting cards.
 - **Provide Deterministic Tools:** Supply precision exposure calculators ($EV_{100}$ and reciprocity) using verified optical formulas rather than fabricated AI math.
 - **Zero-Cost Architecture:** Maintain ₹0 development and operational infrastructure costs by leveraging modern serverless runtimes and free-tier cloud AI services.
 
@@ -22,7 +22,7 @@ ShutterWise AI is an AI-powered photography learning platform designed to help b
 | Feature | Description | Status |
 |---|---|---|
 | **Frontend Foundation** | Premium dark-themed UI, responsive navbar, footer, and modern route views. | **Completed (Phase 1)** |
-| **AI Photography Mentor** | Conversational tutor powered by Google Gemini 3.5 Flash Lite with 6-part troubleshooting. | **Completed (Phase 2)** |
+| **AI Photography Mentor** | Conversational tutor powered by Groq (`openai/gpt-oss-20b`) with 6-part troubleshooting. | **Completed (Migrated to Groq)** |
 | **Knowledge Engine** | 6 deep-dive modules (ISO, Aperture, Shutter, Triangle, Lighting, Troubleshooting) with quizzes. | **Completed (Phase 3)** |
 | **Optical EV Calculator** | Deterministic $EV_{100}$ computation, scene luminance matching, and reciprocal equivalents. | **Completed (Phase 3)** |
 | **Camera Settings Guide** | Starting baseline presets for Portraits, Landscapes, Street, Night, Sports, and Indoors. | **Completed (Phase 3)** |
@@ -36,7 +36,7 @@ ShutterWise AI is an AI-powered photography learning platform designed to help b
 - **Library:** [React](https://react.js.org/) 19
 - **Language:** [TypeScript](https://www.typescriptlang.org/) 5 (Strict mode)
 - **Styling:** [Tailwind CSS](https://tailwindcss.com/) v4 (`@tailwindcss/postcss`)
-- **AI SDK:** [@google/genai](https://www.npmjs.com/package/@google/genai) v2.32.0 (Gemini 3.5 Flash Lite)
+- **AI Engine:** [Groq SDK](https://www.npmjs.com/package/groq-sdk) (`openai/gpt-oss-20b`)
 - **Code Quality:** [ESLint](https://eslint.org/) 9 with `eslint-config-next`
 - **Hosting / Runtime:** [Vercel](https://vercel.com/) Hobby Serverless (`maxDuration: 60`)
 
@@ -58,7 +58,7 @@ npm install
 ```
 
 ### Environment Configuration
-Copy `.env.example` to `.env.local` and add your free Google AI Studio key:
+Copy `.env.example` to `.env.local` and configure your Groq API key:
 
 ```bash
 cp .env.example .env.local
@@ -66,9 +66,12 @@ cp .env.example .env.local
 
 Inside `.env.local`:
 ```env
-GEMINI_API_KEY=your_actual_gemini_api_key_here
-GEMINI_MODEL=gemini-3.5-flash-lite
+# Obtain your free API key from Groq Console: https://console.groq.com/keys
+GROQ_API_KEY=your_actual_groq_api_key_here
+GROQ_MODEL=openai/gpt-oss-20b
 ```
+
+> **Note:** Never commit `.env.local` or expose `GROQ_API_KEY` to client-side code.
 
 ---
 
@@ -98,19 +101,28 @@ npm run build
 
 ---
 
-## 6. Current Development Status
+## 6. Architecture & Groq AI Integration
 
-- **Phase Completed:** Phase 3 — Photography Knowledge Engine & Frontend Modernization.
-- **Available Routes:**
-  - `/` — Modernized Landing Page (Hero, Viewfinder HUD, Core Elements, CTAs)
-  - `/learn` — Photography Knowledge Hub Dashboard with Curriculum Progress Tracker
-  - `/learn/iso` — Module 1: ISO Sensitivity & Sensor Signal Gain
-  - `/learn/aperture` — Module 2: Aperture, Depth of Field & Bokeh
-  - `/learn/shutter-speed` — Module 3: Shutter Speed & Motion Control
-  - `/learn/exposure-triangle` — Module 4: The Exposure Triangle & Reciprocity
-  - `/learn/lighting-fundamentals` — Module 5: Quality, Direction & Color Temperature
-  - `/learn/photography-troubleshooting` — Module 6: 10-Point Diagnostic Troubleshooting
-  - `/calculator` — Optical Exposure Value ($EV_{100}$) and Reciprocity Calculator
-  - `/recommendations` — Filterable Camera Settings Preset Guide with Lens Recommendations
-  - `/chat` — Interactive AI Mentor with contextual prompt pre-filling and retry deduplication
-  - `/api/chat` — Secure serverless Gemini endpoint with rate limiting and timeout guards
+### AI Inference Architecture
+- **Provider:** Groq Cloud LPU™ Inference Engine
+- **SDK:** `groq-sdk`
+- **Default Model:** `openai/gpt-oss-20b` (configurable via `GROQ_MODEL`)
+- **Serverless API Route:** `POST /api/chat`
+- **Request Timeout:** 25 seconds with client-safe timeout error responses (`GATEWAY_TIMEOUT`, 504)
+- **Rate Limiting:** Best-effort sliding window IP throttling (15 req/min)
+- **Payload Protection:** 10 KB max request body, 500-character input cap, and client system-role injection prevention
+- **Error Handling:** Graceful status code mapping without exposing internal headers, API keys, or stack traces
+
+### Available Application Routes:
+- `/` — Modernized Landing Page (Hero, Viewfinder HUD, Core Elements, CTAs)
+- `/learn` — Photography Knowledge Hub Dashboard with Curriculum Progress Tracker
+- `/learn/iso` — Module 1: ISO Sensitivity & Sensor Signal Gain
+- `/learn/aperture` — Module 2: Aperture, Depth of Field & Bokeh
+- `/learn/shutter-speed` — Module 3: Shutter Speed & Motion Control
+- `/learn/exposure-triangle` — Module 4: The Exposure Triangle & Reciprocity
+- `/learn/lighting-fundamentals` — Module 5: Quality, Direction & Color Temperature
+- `/learn/photography-troubleshooting` — Module 6: 10-Point Diagnostic Troubleshooting
+- `/calculator` — Optical Exposure Value ($EV_{100}$) and Reciprocity Calculator
+- `/recommendations` — Filterable Camera Settings Preset Guide with Lens Recommendations
+- `/chat` — Interactive AI Mentor with intelligent conversation scrolling and retry deduplication
+- `/api/chat` — Secure serverless Groq endpoint with rate limiting and timeout guards

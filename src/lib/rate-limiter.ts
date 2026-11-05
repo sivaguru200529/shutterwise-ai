@@ -12,7 +12,7 @@ interface RateLimitRecord {
 }
 
 const windowMs = 60 * 1000; // 1 minute sliding window
-const maxRequestsPerWindow = 15; // 15 requests per minute (aligned with Gemini free tier RPM)
+const maxRequestsPerWindow = 15; // 15 requests per minute client rate-limiting guard
 const ipMap = new Map<string, RateLimitRecord>();
 
 // Periodic memory cleanup to prevent memory bloat

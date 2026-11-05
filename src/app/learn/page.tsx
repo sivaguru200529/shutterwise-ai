@@ -65,7 +65,7 @@ export default function LearnPage() {
                 Stuck on a tricky optical concept?
               </h3>
               <p className="mt-2 text-sm text-neutral-300 leading-relaxed">
-                Our Gemini-powered AI Mentor is always online. Ask about reciprocal focal length math, how your specific camera brand names its autofocus modes, or upload your exposure dilemmas for personalized step-by-step guidance.
+                Our Groq-powered AI Mentor is always online. Ask about reciprocal focal length math, how your specific camera brand names its autofocus modes, or upload your exposure dilemmas for personalized step-by-step guidance.
               </p>
             </div>
 

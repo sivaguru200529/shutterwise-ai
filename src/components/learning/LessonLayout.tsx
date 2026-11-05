@@ -322,7 +322,7 @@ export function LessonLayout({ module, prevTopic, nextTopic }: LessonLayoutProps
             <div className="max-w-xl">
               <div className="inline-flex items-center gap-2 rounded-full bg-amber-500/20 px-3 py-1 text-xs font-mono font-bold text-amber-400 border border-amber-500/40">
                 <span className="h-1.5 w-1.5 rounded-full bg-amber-400 animate-pulse" />
-                Live Gemini AI Mentor
+                Live AI Photography Mentor
               </div>
               <h3 className="text-xl font-bold text-neutral-100 mt-2">
                 Have specific questions about {module.title}?

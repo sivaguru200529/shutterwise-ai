@@ -122,7 +122,7 @@ export function Footer() {
               Architecture & Transparency
             </h3>
             <p className="mt-3 text-xs leading-relaxed text-neutral-400">
-              Built with Next.js App Router, Tailwind CSS, and Google Gemini 3.5 Flash Lite. Developed with ₹0 API budget and 100% free-tier verified models.
+              Built with Next.js App Router, Tailwind CSS, and Groq (GPT-OSS 20B). Developed with ₹0 API budget and 100% free-tier verified models.
             </p>
             <div className="mt-4 rounded-lg border border-neutral-800 bg-neutral-900/50 p-2.5 text-[11px] font-mono text-neutral-400">
               Explain the *Why*, not just the *What*.

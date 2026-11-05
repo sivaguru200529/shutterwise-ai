@@ -31,16 +31,46 @@ function ChatContent() {
   const [errorNotice, setErrorNotice] = useState<string | null>(null);
   const [lastFailedMessage, setLastFailedMessage] = useState<string | null>(null);
   const [isClientLoaded, setIsClientLoaded] = useState(false);
+  const [showScrollToBottom, setShowScrollToBottom] = useState(false);
 
   const searchParams = useSearchParams();
+  const messagesContainerRef = useRef<HTMLDivElement | null>(null);
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+  const isNearBottomRef = useRef(true);
+  const isInitialMountRef = useRef(true);
+  const previousMessagesCountRef = useRef(0);
 
-  // Auto-scroll helper
+  // Dedicated container scroll-to-bottom helper (never scrolls the browser window)
   const scrollToBottom = useCallback((smooth = true) => {
-    if (messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior: smooth ? "smooth" : "auto" });
-    }
+    requestAnimationFrame(() => {
+      const container = messagesContainerRef.current;
+      if (!container) return;
+      container.scrollTo({
+        top: container.scrollHeight,
+        behavior: smooth ? "smooth" : "auto",
+      });
+      isNearBottomRef.current = true;
+      setShowScrollToBottom(false);
+    });
+  }, []);
+
+  // Monitor scroll position in the conversation container
+  const handleScroll = useCallback(() => {
+    const container = messagesContainerRef.current;
+    if (!container) return;
+
+    const { scrollTop, scrollHeight, clientHeight } = container;
+    const distanceFromBottom = scrollHeight - (scrollTop + clientHeight);
+
+    // User is considered at the bottom if within 80px threshold
+    const isAtBottom = distanceFromBottom < 80;
+    isNearBottomRef.current = isAtBottom;
+
+    // Show floating button only if user scrolled up and container has scrollable content
+    const hasScrollableContent = scrollHeight > clientHeight + 40;
+    const shouldShow = !isAtBottom && hasScrollableContent;
+    setShowScrollToBottom((prev) => (prev !== shouldShow ? shouldShow : prev));
   }, []);
 
   // Hydrate chat history from localStorage on initial client mount
@@ -62,7 +92,7 @@ function ChatContent() {
       const frame = requestAnimationFrame(() => {
         setInputText(promptParam.trim());
         setTimeout(() => {
-          textareaRef.current?.focus();
+          textareaRef.current?.focus({ preventScroll: true });
         }, 50);
       });
       return () => cancelAnimationFrame(frame);
@@ -73,9 +103,38 @@ function ChatContent() {
   useEffect(() => {
     if (isClientLoaded) {
       saveChatHistory(messages);
-      scrollToBottom();
     }
-  }, [messages, isClientLoaded, scrollToBottom]);
+  }, [messages, isClientLoaded]);
+
+  // Intelligent conversation scrolling: follows new messages without disturbing user reading position
+  useEffect(() => {
+    // Avoid any auto-scrolling on initial page load / mount
+    if (isInitialMountRef.current) {
+      isInitialMountRef.current = false;
+      previousMessagesCountRef.current = messages.length;
+      return;
+    }
+
+    if (messages.length > previousMessagesCountRef.current) {
+      const lastMessage = messages[messages.length - 1];
+      if (lastMessage?.role === "user") {
+        // User sent a message: always scroll down to see the sent bubble
+        scrollToBottom(true);
+      } else if (isNearBottomRef.current) {
+        // Assistant replied: scroll only if the user was already following at the bottom
+        scrollToBottom(true);
+      }
+    }
+
+    previousMessagesCountRef.current = messages.length;
+  }, [messages, scrollToBottom]);
+
+  // Scroll to reveal assistant loading indicator only if user was near bottom
+  useEffect(() => {
+    if (isLoading && isNearBottomRef.current) {
+      scrollToBottom(true);
+    }
+  }, [isLoading, scrollToBottom]);
 
   // Send message implementation with retry deduplication
   const handleSendMessage = async (textToSend: string, isRetry = false) => {
@@ -156,7 +215,7 @@ function ChatContent() {
     } finally {
       setIsLoading(false);
       setTimeout(() => {
-        textareaRef.current?.focus();
+        textareaRef.current?.focus({ preventScroll: true });
       }, 50);
     }
   };
@@ -194,16 +253,16 @@ function ChatContent() {
     <div className="flex flex-col min-h-[calc(100vh-4rem)]">
       {/* Page Header */}
       <PageHeader
-        badge="Phase 3 • Gemini 3.5 AI Integration"
+        badge="Phase 3 • Groq AI Integration"
         title="AI Photography Mentor"
         description="Your interactive tutor for camera settings, diagnosing shooting errors, and understanding optical physics in plain English."
       />
 
       {/* Chat Workspace */}
       <div className="flex-1 mx-auto w-full max-w-5xl px-4 py-6 sm:px-6 lg:px-8">
-        <div className="flex flex-col h-[750px] rounded-2xl border border-neutral-800 bg-[#161619] shadow-2xl overflow-hidden">
+        <div className="flex flex-col h-[600px] sm:h-[700px] lg:h-[750px] rounded-2xl border border-neutral-800 bg-[#161619] shadow-2xl overflow-hidden">
           {/* Chat Window Header */}
-          <div className="flex items-center justify-between border-b border-neutral-800 bg-[#121214] px-4 py-3 sm:px-6 sm:py-4">
+          <div className="flex-shrink-0 flex items-center justify-between border-b border-neutral-800 bg-[#121214] px-4 py-3 sm:px-6 sm:py-4">
             <div className="flex items-center gap-3">
               <div className="relative flex h-10 w-10 items-center justify-center rounded-xl border border-amber-500/30 bg-neutral-900 shadow-sm">
                 <svg
@@ -227,7 +286,7 @@ function ChatContent() {
                 <h2 className="text-sm font-semibold text-neutral-100 flex items-center gap-2">
                   ShutterWise Mentor
                   <span className="rounded-full bg-amber-500/10 px-2 py-0.5 text-[10px] font-mono text-amber-400 border border-amber-500/30">
-                    Gemini 3.5 Flash Lite
+                    Groq GPT-OSS 20B
                   </span>
                 </h2>
                 <p className="text-xs text-neutral-400">
@@ -260,13 +319,17 @@ function ChatContent() {
             </div>
           </div>
 
-          {/* Conversation Area */}
-          <div
-            className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4"
-            role="log"
-            aria-live="polite"
-            aria-label="Conversation with ShutterWise Mentor"
-          >
+          {/* Conversation Workspace Container */}
+          <div className="relative flex-1 min-h-0 flex flex-col">
+            {/* Scrollable Conversation Area */}
+            <div
+              ref={messagesContainerRef}
+              onScroll={handleScroll}
+              className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4"
+              role="log"
+              aria-live="polite"
+              aria-label="Conversation with ShutterWise Mentor"
+            >
             {/* Initial Welcome Banner if no conversation history */}
             {messages.length === 0 && (
               <div className="rounded-2xl border border-neutral-800/90 bg-[#121215] p-6 max-w-2xl mx-auto text-center sm:text-left mt-2">
@@ -414,43 +477,65 @@ function ChatContent() {
             <div ref={messagesEndRef} />
           </div>
 
-          {/* Chat Input Bar */}
-          <div className="border-t border-neutral-800 bg-[#121214] p-3 sm:p-4">
-            <form onSubmit={handleSubmit} className="flex flex-col gap-2">
-              <div className="relative flex items-center">
-                <textarea
-                  ref={textareaRef}
-                  value={inputText}
-                  onChange={(e) => setInputText(e.target.value)}
-                  onKeyDown={handleKeyDown}
-                  placeholder="Ask a photography question (e.g. 'Why is my photo blurry at 1/30s?')..."
-                  rows={2}
-                  maxLength={500}
-                  className="w-full resize-none rounded-xl border border-neutral-800 bg-neutral-900/90 px-4 py-3 pr-14 text-sm text-neutral-100 placeholder-neutral-500 focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500 transition-colors"
-                />
-                <button
-                  type="submit"
-                  disabled={!inputText.trim() || isLoading}
-                  className="absolute right-2.5 bottom-3.5 inline-flex h-9 w-9 items-center justify-center rounded-lg bg-amber-500 text-neutral-950 transition-all hover:bg-amber-400 active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed shadow-sm shadow-amber-500/20"
-                  aria-label="Send message"
-                >
-                  <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" />
-                  </svg>
-                </button>
-              </div>
+          {/* Floating Scroll-to-Bottom Button */}
+          {showScrollToBottom && (
+            <button
+              type="button"
+              onClick={() => scrollToBottom(true)}
+              className="absolute bottom-3 left-1/2 -translate-x-1/2 z-20 inline-flex items-center gap-1.5 rounded-full border border-neutral-700/80 bg-neutral-900/95 px-3.5 py-1.5 text-xs font-medium text-neutral-200 shadow-xl backdrop-blur hover:border-amber-500/50 hover:text-amber-300 hover:bg-neutral-800 transition-all duration-200 active:scale-95"
+              aria-label="Scroll to latest messages"
+            >
+              <svg
+                className="h-3.5 w-3.5 text-amber-400"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth="2.5"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 13.5L12 21m0 0l-7.5-7.5M12 21V3" />
+              </svg>
+              <span>Scroll to bottom</span>
+            </button>
+          )}
+        </div>
 
-              <div className="flex items-center justify-between text-[11px] font-mono text-neutral-500 px-1">
-                <span className="hidden sm:inline">
-                  Press <kbd className="rounded border border-neutral-700 bg-neutral-800 px-1 py-0.5 text-neutral-400">Enter</kbd> to send, <kbd className="rounded border border-neutral-700 bg-neutral-800 px-1 py-0.5 text-neutral-400">Shift+Enter</kbd> for new line
-                </span>
-                <span className="sm:hidden">Tap send icon</span>
-                <span className={inputText.length > 450 ? "text-amber-400 font-bold" : ""}>
-                  {inputText.length} / 500
-                </span>
-              </div>
-            </form>
-          </div>
+        {/* Chat Input Bar */}
+        <div className="flex-shrink-0 border-t border-neutral-800 bg-[#121214] p-3 sm:p-4">
+          <form onSubmit={handleSubmit} className="flex flex-col gap-2">
+            <div className="relative flex items-center">
+              <textarea
+                ref={textareaRef}
+                value={inputText}
+                onChange={(e) => setInputText(e.target.value)}
+                onKeyDown={handleKeyDown}
+                placeholder="Ask a photography question (e.g. 'Why is my photo blurry at 1/30s?')..."
+                rows={2}
+                maxLength={500}
+                className="w-full resize-none rounded-xl border border-neutral-800 bg-neutral-900/90 px-4 py-3 pr-14 text-sm text-neutral-100 placeholder-neutral-500 focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500 transition-colors"
+              />
+              <button
+                type="submit"
+                disabled={!inputText.trim() || isLoading}
+                className="absolute right-2.5 bottom-3.5 inline-flex h-9 w-9 items-center justify-center rounded-lg bg-amber-500 text-neutral-950 transition-all hover:bg-amber-400 active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed shadow-sm shadow-amber-500/20"
+                aria-label="Send message"
+              >
+                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" />
+                </svg>
+              </button>
+            </div>
+
+            <div className="flex items-center justify-between text-[11px] font-mono text-neutral-500 px-1">
+              <span className="hidden sm:inline">
+                Press <kbd className="rounded border border-neutral-700 bg-neutral-800 px-1 py-0.5 text-neutral-400">Enter</kbd> to send, <kbd className="rounded border border-neutral-700 bg-neutral-800 px-1 py-0.5 text-neutral-400">Shift+Enter</kbd> for new line
+              </span>
+              <span className="sm:hidden">Tap send icon</span>
+              <span className={inputText.length > 450 ? "text-amber-400 font-bold" : ""}>
+                {inputText.length} / 500
+              </span>
+            </div>
+          </form>
+        </div>
         </div>
       </div>
     </div>
