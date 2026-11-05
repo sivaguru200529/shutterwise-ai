@@ -38,11 +38,28 @@ export interface ChatHistoryItem {
 }
 
 /**
- * Checks whether an error represents a request timeout or abort condition.
+ * Checks whether an error represents a client-side request cancellation / abort.
+ */
+export function isAbortError(error: unknown): boolean {
+  if (!error) return false;
+  if (error instanceof Groq.APIUserAbortError) return true;
+  const msg = error instanceof Error ? error.message : String(error);
+  const name = error instanceof Error ? error.name : "";
+  return (
+    name === "AbortError" ||
+    msg.includes("CLIENT_ABORTED") ||
+    msg.includes("Request was aborted") ||
+    msg.includes("aborted")
+  );
+}
+
+/**
+ * Checks whether an error represents a request timeout condition.
  */
 export function isTimeoutError(error: unknown): boolean {
   if (!error) return false;
-  if (error instanceof Groq.APIConnectionTimeoutError || error instanceof Groq.APIUserAbortError) {
+  if (isAbortError(error)) return false;
+  if (error instanceof Groq.APIConnectionTimeoutError) {
     return true;
   }
   const msg = error instanceof Error ? error.message : String(error);
@@ -102,11 +119,13 @@ export function isServiceUnavailableError(error: unknown): boolean {
  * @param message The user's current message (validated to <= 500 characters).
  * @param history Recent conversation history (capped to maximum 6 prior turns).
  * @param timeoutMs Request timeout in milliseconds (default 25,000ms).
+ * @param signal Optional AbortSignal from the client HTTP request to cancel in-flight upstream inference.
  */
 export async function sendPhotographyMessage(
   message: string,
   history: ChatHistoryItem[] = [],
-  timeoutMs = GROQ_REQUEST_TIMEOUT_MS
+  timeoutMs = GROQ_REQUEST_TIMEOUT_MS,
+  signal?: AbortSignal
 ): Promise<string> {
   const client = getGroqClient(timeoutMs);
   const model = process.env.GROQ_MODEL?.trim() || DEFAULT_GROQ_MODEL;
@@ -136,12 +155,17 @@ export async function sendPhotographyMessage(
   });
 
   try {
-    const completion = await client.chat.completions.create({
-      model,
-      messages,
-      temperature: 0.7,
-      max_tokens: GROQ_MAX_OUTPUT_TOKENS,
-    });
+    const completion = await client.chat.completions.create(
+      {
+        model,
+        messages,
+        temperature: 0.7,
+        max_tokens: GROQ_MAX_OUTPUT_TOKENS,
+      },
+      {
+        signal,
+      }
+    );
 
     const reply = completion.choices[0]?.message?.content;
 
@@ -151,6 +175,9 @@ export async function sendPhotographyMessage(
 
     return reply.trim();
   } catch (error) {
+    if (signal?.aborted || isAbortError(error)) {
+      throw new Error("CLIENT_ABORTED: Request was cancelled by the client.");
+    }
     if (isTimeoutError(error)) {
       throw new Error("GATEWAY_TIMEOUT: Groq API request timed out.");
     }

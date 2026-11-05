@@ -41,6 +41,8 @@ function ChatContent() {
   const isNearBottomRef = useRef(true);
   const isInitialMountRef = useRef(true);
   const previousMessagesCountRef = useRef(0);
+  const abortControllerRef = useRef<AbortController | null>(null);
+  const activeRequestIdRef = useRef<number>(0);
 
   // Dedicated container scroll-to-bottom helper (never scrolls the browser window)
   const scrollToBottom = useCallback((smooth = true) => {
@@ -53,6 +55,28 @@ function ChatContent() {
       });
       isNearBottomRef.current = true;
       setShowScrollToBottom(false);
+    });
+  }, []);
+
+  // Dedicated container scroll-to-message-top helper (never scrolls the browser window)
+  const scrollToMessageTop = useCallback((messageId: string, smooth = true) => {
+    requestAnimationFrame(() => {
+      const container = messagesContainerRef.current;
+      if (!container) return;
+      const element = document.getElementById(`message-${messageId}`);
+      if (!element) return;
+
+      const containerRect = container.getBoundingClientRect();
+      const elementRect = element.getBoundingClientRect();
+      const targetScrollTop = container.scrollTop + (elementRect.top - containerRect.top) - 12;
+
+      container.scrollTo({
+        top: Math.max(0, targetScrollTop),
+        behavior: smooth ? "smooth" : "auto",
+      });
+
+      const { scrollHeight, clientHeight } = container;
+      isNearBottomRef.current = scrollHeight - (targetScrollTop + clientHeight) < 80;
     });
   }, []);
 
@@ -74,6 +98,11 @@ function ChatContent() {
     setShowScrollToBottom((prev) => (prev !== shouldShow ? shouldShow : prev));
   }, []);
 
+  // Reset window scroll to top on initial page mount (e.g. when navigating from other long pages)
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+  }, []);
+
   // Hydrate chat history from localStorage on initial client mount
   useEffect(() => {
     const frame = requestAnimationFrame(() => {
@@ -84,6 +113,15 @@ function ChatContent() {
       setIsClientLoaded(true);
     });
     return () => cancelAnimationFrame(frame);
+  }, []);
+
+  // Cleanup active AbortController on component unmount
+  useEffect(() => {
+    return () => {
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+    };
   }, []);
 
   // Handle URL query parameters for contextual questions (e.g. /chat?prompt=...)
@@ -121,14 +159,16 @@ function ChatContent() {
       if (lastMessage?.role === "user") {
         // User sent a message: always scroll down to see the sent bubble
         scrollToBottom(true);
-      } else if (isNearBottomRef.current) {
-        // Assistant replied: scroll only if the user was already following at the bottom
-        scrollToBottom(true);
+      } else if (lastMessage?.role === "assistant") {
+        // Assistant replied: scroll to top of new response only if user was already following at the bottom
+        if (isNearBottomRef.current) {
+          scrollToMessageTop(lastMessage.id, true);
+        }
       }
     }
 
     previousMessagesCountRef.current = messages.length;
-  }, [messages, scrollToBottom]);
+  }, [messages, scrollToBottom, scrollToMessageTop]);
 
   // Scroll to reveal assistant loading indicator only if user was near bottom
   useEffect(() => {
@@ -137,13 +177,32 @@ function ChatContent() {
     }
   }, [isLoading, scrollToBottom]);
 
-  // Send message implementation with retry deduplication
+  // Stop generating callback to abort in-flight requests immediately
+  const handleStopGenerating = useCallback(() => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+      abortControllerRef.current = null;
+    }
+    setIsLoading(false);
+  }, []);
+
+  // Send message implementation with retry deduplication and cancellation support
   const handleSendMessage = async (textToSend: string, isRetry = false) => {
     const trimmed = textToSend.trim();
     if (!trimmed || isLoading) return;
 
     setErrorNotice(null);
     setLastFailedMessage(null);
+
+    // Abort any existing in-flight controller before starting a new request
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+      abortControllerRef.current = null;
+    }
+
+    const requestId = ++activeRequestIdRef.current;
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
 
     // Prevent duplicate user message bubble if retrying the same message
     const baseMessages =
@@ -185,9 +244,19 @@ function ChatContent() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify(requestBody),
+        signal: controller.signal,
       });
 
+      // Discard stale responses if a newer request was dispatched
+      if (requestId !== activeRequestIdRef.current) {
+        return;
+      }
+
       const data: ChatResponseBody | ChatErrorResponse = await res.json();
+
+      if (requestId !== activeRequestIdRef.current) {
+        return;
+      }
 
       if (!res.ok) {
         const errorMsg =
@@ -208,16 +277,32 @@ function ChatContent() {
       } else {
         throw new Error("Empty response received from the server.");
       }
-    } catch (err) {
+    } catch (err: unknown) {
+      // Discard errors from stale requests
+      if (requestId !== activeRequestIdRef.current) {
+        return;
+      }
+
+      // If cancelled by the user clicking Stop, do not display an error banner
+      if (
+        controller.signal.aborted ||
+        (err instanceof Error && err.name === "AbortError")
+      ) {
+        return;
+      }
+
       const displayErr =
         err instanceof Error ? err.message : "Network error. Unable to reach the server.";
       setErrorNotice(displayErr);
       setLastFailedMessage(trimmed);
     } finally {
-      setIsLoading(false);
-      setTimeout(() => {
-        textareaRef.current?.focus({ preventScroll: true });
-      }, 50);
+      if (requestId === activeRequestIdRef.current) {
+        setIsLoading(false);
+        abortControllerRef.current = null;
+        setTimeout(() => {
+          textareaRef.current?.focus({ preventScroll: true });
+        }, 50);
+      }
     }
   };
 
@@ -254,14 +339,15 @@ function ChatContent() {
     <div className="flex flex-col min-h-[calc(100vh-4rem)]">
       {/* Page Header */}
       <PageHeader
+        compact={true}
         badge="Phase 3 • Groq AI Integration"
         title="AI Photography Mentor"
         description="Your interactive tutor for camera settings, diagnosing shooting errors, and understanding optical physics in plain English."
       />
 
       {/* Chat Workspace */}
-      <div className="flex-1 mx-auto w-full max-w-5xl px-4 py-6 sm:px-6 lg:px-8">
-        <div className="flex flex-col h-[600px] sm:h-[700px] lg:h-[750px] rounded-2xl border border-neutral-800 bg-[#161619] shadow-2xl overflow-hidden">
+      <div className="flex-1 mx-auto w-full max-w-5xl px-4 py-3 sm:px-6 sm:py-4 lg:px-8">
+        <div className="flex flex-col h-[calc(100dvh-13.5rem)] min-h-[500px] max-h-[720px] rounded-2xl border border-neutral-800 bg-[#161619] shadow-2xl overflow-hidden">
           {/* Chat Window Header */}
           <div className="flex-shrink-0 flex items-center justify-between border-b border-neutral-800 bg-[#121214] px-4 py-3 sm:px-6 sm:py-4">
             <div className="flex items-center gap-3">
@@ -381,6 +467,7 @@ function ChatContent() {
             {messages.map((msg) => (
               <div
                 key={msg.id}
+                id={`message-${msg.id}`}
                 className={`flex gap-3 max-w-3xl ${
                   msg.role === "user" ? "ml-auto justify-end" : "mr-auto justify-start"
                 }`}
@@ -518,16 +605,29 @@ function ChatContent() {
                 maxLength={500}
                 className="w-full resize-none rounded-xl border border-neutral-800 bg-neutral-900/90 px-4 py-3 pr-14 text-sm text-neutral-100 placeholder-neutral-500 focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500 transition-colors"
               />
-              <button
-                type="submit"
-                disabled={!inputText.trim() || isLoading}
-                className="absolute right-2.5 bottom-3.5 inline-flex h-9 w-9 items-center justify-center rounded-lg bg-amber-500 text-neutral-950 transition-all hover:bg-amber-400 active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed shadow-sm shadow-amber-500/20"
-                aria-label="Send message"
-              >
-                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" />
-                </svg>
-              </button>
+              {isLoading ? (
+                <button
+                  type="button"
+                  onClick={handleStopGenerating}
+                  className="absolute right-2.5 bottom-3.5 inline-flex h-9 items-center gap-1.5 rounded-lg bg-rose-500 hover:bg-rose-400 px-3 text-neutral-950 font-medium text-xs transition-all active:scale-95 shadow-sm shadow-rose-500/20"
+                  aria-label="Stop generating response"
+                  title="Stop generating"
+                >
+                  <span className="h-2.5 w-2.5 rounded-xs bg-neutral-950 flex-shrink-0" />
+                  <span className="font-semibold text-[11px] tracking-wide">Stop</span>
+                </button>
+              ) : (
+                <button
+                  type="submit"
+                  disabled={!inputText.trim()}
+                  className="absolute right-2.5 bottom-3.5 inline-flex h-9 w-9 items-center justify-center rounded-lg bg-amber-500 text-neutral-950 transition-all hover:bg-amber-400 active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed shadow-sm shadow-amber-500/20"
+                  aria-label="Send message"
+                >
+                  <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" />
+                  </svg>
+                </button>
+              )}
             </div>
 
             <div className="flex items-center justify-between text-[11px] font-mono text-neutral-500 px-1">

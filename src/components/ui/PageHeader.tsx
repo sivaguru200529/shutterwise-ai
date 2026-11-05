@@ -4,6 +4,7 @@ interface PageHeaderProps {
   badge?: string;
   title: string;
   description: string;
+  compact?: boolean;
   statusNotice?: {
     label: string;
     message: string;
@@ -16,23 +17,38 @@ export function PageHeader({
   badge,
   title,
   description,
+  compact = false,
   statusNotice,
   children,
 }: PageHeaderProps) {
   return (
-    <div className="relative border-b border-neutral-800/80 bg-gradient-to-b from-neutral-900/50 to-transparent pb-10 pt-12 sm:pb-14 sm:pt-16">
+    <div
+      className={`relative border-b border-neutral-800/80 bg-gradient-to-b from-neutral-900/50 to-transparent ${
+        compact ? "py-6 sm:py-8" : "pb-10 pt-12 sm:pb-14 sm:pt-16"
+      }`}
+    >
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="max-w-3xl">
           {badge && (
-            <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-amber-500/30 bg-amber-500/10 px-3 py-1 text-xs font-mono font-medium text-amber-400">
+            <div className="mb-2.5 inline-flex items-center gap-2 rounded-full border border-amber-500/30 bg-amber-500/10 px-3 py-1 text-xs font-mono font-medium text-amber-400">
               <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />
               {badge}
             </div>
           )}
-          <h1 className="text-3xl font-bold tracking-tight text-neutral-100 sm:text-4xl lg:text-5xl">
+          <h1
+            className={`font-bold tracking-tight text-neutral-100 ${
+              compact
+                ? "text-2xl sm:text-3xl lg:text-4xl"
+                : "text-3xl sm:text-4xl lg:text-5xl"
+            }`}
+          >
             {title}
           </h1>
-          <p className="mt-4 text-base leading-relaxed text-neutral-300 sm:text-lg">
+          <p
+            className={`leading-relaxed text-neutral-300 ${
+              compact ? "mt-2 text-sm sm:text-base max-w-2xl" : "mt-4 text-base sm:text-lg"
+            }`}
+          >
             {description}
           </p>
         </div>

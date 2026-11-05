@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import {
   isGroqConfigured,
   sendPhotographyMessage,
+  isAbortError,
   isTimeoutError,
   isRateLimitError,
   isAuthError,
@@ -132,8 +133,13 @@ export async function POST(req: NextRequest) {
       return NextResponse.json(errorPayload, { status: 503 });
     }
 
-    // 7. Dispatch to Groq via server-side SDK
-    const reply = await sendPhotographyMessage(trimmedMessage, sanitizedHistory);
+    // 7. Dispatch to Groq via server-side SDK (with abort signal propagation)
+    const reply = await sendPhotographyMessage(
+      trimmedMessage,
+      sanitizedHistory,
+      undefined,
+      req.signal
+    );
 
     const durationMs = Date.now() - startTime;
     console.log(`[ShutterWise /api/chat] Success: generated response in ${durationMs}ms`);
@@ -143,6 +149,12 @@ export async function POST(req: NextRequest) {
   } catch (error: unknown) {
     const durationMs = Date.now() - startTime;
     const errorMessage = error instanceof Error ? error.message : String(error);
+
+    // Client cancellation / abort handling: return cleanly without error logging
+    if (req.signal.aborted || isAbortError(error)) {
+      console.log(`[ShutterWise /api/chat] Client cancelled request after ${durationMs}ms`);
+      return new NextResponse(null, { status: 499 });
+    }
 
     // Diagnostic logging: records timing and categorized message (never secrets or full payload)
     console.error(`[ShutterWise /api/chat error] (${durationMs}ms):`, errorMessage);
